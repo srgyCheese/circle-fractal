@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+	<head>
+		<title>pathExample</title>
+		<meta charset='utf-8' />
+	</head>
+	<body>
+		<p>Point count: <span id="point-count"></span></p>
+		<canvas id="example" style="border: solid 1px black">Обновите браузер</canvas>
+		<script>
+			let canvas = document.getElementById("example"),
+				ctx     = canvas.getContext('2d')
+			canvas.height = 2000
+			canvas.width  = 2000
+			
+			const centerX = canvas.width / 2
+			const centerY = canvas.height / 2
+
+			function drawCircle({centerX, centerY, radius}) {
+				ctx.beginPath();
+				ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
+				ctx.fillStyle = 'green';
+				ctx.fill();
+			}
+
+			function drawCircleFractal({centerX, centerY, radius, depth, pointsInCircle, minCircleSize = 0}) {
+				if (depth == 1) {
+					let pointCount = 0
+
+					for (let rad = 0, i = 0; i < pointsInCircle; rad += (2 * Math.PI) / pointsInCircle, i++) {
+						let y = Math.sin(rad) * radius
+						let x = Math.cos(rad) * radius
+						let new_radius = radius / pointsInCircle
+						new_radius = new_radius > minCircleSize ? new_radius : minCircleSize
+
+						drawCircle({
+							centerX: x + centerX,
+							centerY: y + centerY,
+							radius: new_radius
+						})
+
+						pointCount += 1
+					}
+
+					return pointCount
+				}
+
+				let pointCount = 0
+				for (let rad = 0, i = 0; i < pointsInCircle; rad += (2 * Math.PI) / pointsInCircle, i++) {
+					let y = Math.sin(rad) * radius;
+					let x = Math.cos(rad) * radius;
+					pointCount += drawCircleFractal({
+						centerX: x + centerX, 
+						centerY: y + centerY, 
+						radius: radius / pointsInCircle, 
+						depth: depth - 1, 
+						pointsInCircle: Math.ceil(pointsInCircle / 2),
+						minCircleSize
+					})
+				}
+
+				return pointCount
+			}
+
+			const pointCount = drawCircleFractal({
+				centerX, 
+				centerY, 
+				radius: 500, 
+				depth: 3, 
+				pointsInCircle: 30,
+				minCircleSize: 1 / 2
+			})
+
+			document.querySelector('#point-count').innerHTML = pointCount
+		</script>
+	</body>
+</html>
